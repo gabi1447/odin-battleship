@@ -1,4 +1,4 @@
-export function ship(l) {
+export function Ship(l) {
     const length = l;
     let hits = 0;
 
