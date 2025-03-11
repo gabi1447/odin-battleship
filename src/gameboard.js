@@ -1,13 +1,9 @@
 import { Ship } from "./ship.js";
 
 export function Gameboard() {
-    // keys represent the size of the ship and values the number of them present in the grid
-    const shipSizesAvailable = {
-        1: 4,
-        2: 3,
-        3: 2,
-        4: 1,
-    };
+    // the array length represents the number of ships on the grid,
+    // and each element the size of the ship.
+    const arrayOfShipSizes = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
 
     let shipsPresentOnGrid = [];
 
@@ -47,13 +43,45 @@ export function Gameboard() {
         const shipLength = returnLengthOfShip(startCoordinates, endCoordinates);
         const shipToBePlaced = Ship(shipLength);
 
-        shipToBePlaced.coordinatesList = shipToBePlaced.generateCoordinates(
+        shipToBePlaced.coordinatesList = generateCoordinates(
             startCoordinates,
             endCoordinates,
         );
 
         drawShipOnGrid(shipToBePlaced);
         shipsPresentOnGrid.push(shipToBePlaced);
+    }
+
+    function generateCoordinates(start, end) {
+        let arrayOfCoordinates = [];
+
+        if (start[0] === end[0]) {
+            const s = start[1];
+            const e = end[1];
+            if (s < e) {
+                for (let i = s; i <= e; i++) {
+                    arrayOfCoordinates.push([start[0], i]);
+                }
+            } else {
+                for (let i = s; i >= e; i--) {
+                    arrayOfCoordinates.push([start[0], i]);
+                }
+            }
+        } else if (start[1] === end[1]) {
+            const s = start[0];
+            const e = end[0];
+            if (s < e) {
+                for (let i = s; i <= e; i++) {
+                    arrayOfCoordinates.push([i, start[1]]);
+                }
+            } else {
+                for (let i = s; i >= e; i--) {
+                    arrayOfCoordinates.push([i, start[1]]);
+                }
+            }
+        }
+
+        return arrayOfCoordinates;
     }
 
     function drawShipOnGrid(shipInstance) {
@@ -134,6 +162,82 @@ export function Gameboard() {
         return true;
     }
 
+    function randomizeShipsPlacement() {
+        for (let size of arrayOfShipSizes) {
+            while (true) {
+                const randomCoordinates = generateRandomCoordinates();
+
+                const startAndEndCoordinates = generateShipPlacement(
+                    randomCoordinates,
+                    size,
+                );
+
+                if (!startAndEndCoordinates) {
+                    continue;
+                }
+
+                const start = startAndEndCoordinates[0];
+                const end = startAndEndCoordinates[1];
+                placeShip(start, end);
+                break;
+            }
+        }
+    }
+
+    function generateShipPlacement(start, size) {
+        // check if size is equal to 1 and check if the coordinates are safe to place the ship
+        // if the ship is safe to place return start as the start and end coordinates
+        if (size === 1 && isItSafeToPlaceTheShip([start])) {
+            return [start, start];
+        } else if (size === 1 && !isItSafeToPlaceTheShip([start])) {
+            return false;
+        }
+        // this function calculates if the placement of the ship, from the starting point
+        // to the right, left, upwards and downwards is possible. it should return start and end
+        // coordinates when one combination is possible.
+        const right = [start, [start[0], start[1] + size - 1]];
+        const left = [start, [start[0], start[1] - (size - 1)]];
+        const upwards = [start, [start[0] + size - 1, start[1]]];
+        const downwards = [start, [start[0] - (size - 1), start[1]]];
+        const possiblePlacements = [right, left, upwards, downwards];
+
+        for (const placement of possiblePlacements) {
+            if (!areCoordinatesValid(placement[0], placement[1])) {
+                continue;
+            }
+
+            const shipCoordinates = generateCoordinates(
+                placement[0],
+                placement[1],
+            );
+
+            if (isItSafeToPlaceTheShip(shipCoordinates)) {
+                return placement;
+            }
+        }
+
+        return false;
+    }
+
+    function isItSafeToPlaceTheShip(shipCoordinates) {
+        for (let coordinates of shipCoordinates) {
+            const row = coordinates[0];
+            const col = coordinates[1];
+            if (grid[row][col] === 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function randomizeNumber(range) {
+        return Math.floor(Math.random() * range);
+    }
+
+    function generateRandomCoordinates() {
+        return [randomizeNumber(10), randomizeNumber(10)];
+    }
+
     return {
         get grid() {
             return grid;
@@ -142,5 +246,6 @@ export function Gameboard() {
         print,
         receiveAttack,
         areAllShipsSunk,
+        randomizeShipsPlacement,
     };
 }
