@@ -26,15 +26,6 @@ export function Gameboard() {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     ];
 
-    function print() {
-        for (let row of grid) {
-            for (let cell of row) {
-                process.stdout.write(`${cell} `);
-            }
-            console.log("");
-        }
-    }
-
     function placeShip(startCoordinates, endCoordinates) {
         if (!areCoordinatesValid(startCoordinates, endCoordinates)) {
             return false;
