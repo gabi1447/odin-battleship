@@ -132,9 +132,11 @@ export function Gameboard() {
     }
 
     function receiveAttack(coordinates) {
+        // returns true if a ship is hit
         const row = coordinates[0];
         const col = coordinates[1];
         let shipHit = false;
+
         for (let ship of shipsPresentOnGrid) {
             for (let shipCoordinates of ship.coordinatesList) {
                 if (areArraysEqual(coordinates, shipCoordinates)) {
@@ -146,11 +148,12 @@ export function Gameboard() {
                 }
             }
             if (shipHit) {
-                return;
+                return true;
             }
         }
         // a 3 resembles that a water cell has been hit on the grid
         grid[row][col] = 3;
+        return false;
     }
 
     function areAllShipsSunk() {
@@ -163,6 +166,7 @@ export function Gameboard() {
     }
 
     function randomizeShipsPlacement() {
+        resetGrid();
         for (let size of arrayOfShipSizes) {
             while (true) {
                 const randomCoordinates = generateRandomCoordinates();
@@ -184,6 +188,22 @@ export function Gameboard() {
         }
     }
 
+    function resetGrid() {
+        shipsPresentOnGrid = [];
+        grid = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ];
+    }
+
     function generateShipPlacement(start, size) {
         // check if size is equal to 1 and check if the coordinates are safe to place the ship
         // if the ship is safe to place return start as the start and end coordinates
@@ -199,7 +219,7 @@ export function Gameboard() {
         const left = [start, [start[0], start[1] - (size - 1)]];
         const upwards = [start, [start[0] + size - 1, start[1]]];
         const downwards = [start, [start[0] - (size - 1), start[1]]];
-        const possiblePlacements = [right, left, upwards, downwards];
+        const possiblePlacements = [right, upwards, left, downwards];
 
         for (const placement of possiblePlacements) {
             if (!areCoordinatesValid(placement[0], placement[1])) {
@@ -238,6 +258,23 @@ export function Gameboard() {
         return [randomizeNumber(10), randomizeNumber(10)];
     }
 
+    function generateRandomValidCoordinates() {
+        // this function generates a pair of coordinates that hasn't been hit yet
+        let randomCoordinates;
+        while (true) {
+            randomCoordinates = generateRandomCoordinates();
+
+            if (
+                grid[randomCoordinates[0]][randomCoordinates[1]] === 2 ||
+                grid[randomCoordinates[0]][randomCoordinates[1]] === 3
+            ) {
+                continue;
+            }
+            break;
+        }
+        return randomCoordinates;
+    }
+
     return {
         get grid() {
             return grid;
@@ -247,5 +284,10 @@ export function Gameboard() {
         receiveAttack,
         areAllShipsSunk,
         randomizeShipsPlacement,
+        get shipsPresentOnGrid() {
+            return shipsPresentOnGrid;
+        },
+        generateRandomCoordinates,
+        generateRandomValidCoordinates,
     };
 }
