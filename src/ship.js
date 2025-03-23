@@ -14,6 +14,13 @@ export function Ship(l) {
         return hits === length;
     }
 
+    function horizontalOrVertical() {
+        if (coordinatesList[0][0] === coordinatesList[length - 1][0]) {
+            return "h";
+        }
+        return "v";
+    }
+
     return {
         length,
         get hits() {
@@ -27,5 +34,6 @@ export function Ship(l) {
         },
         isSunk,
         hit,
+        horizontalOrVertical,
     };
 }
